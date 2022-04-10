@@ -20,6 +20,7 @@ module.exports = function (path /* The path is path for source code of webmax */
             "user": "root",
             "password": "",
             "databaseName": "webmax-test-app"
-        }
+        },
+        "partialRendering": true
     }
 }

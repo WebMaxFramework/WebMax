@@ -29,6 +29,7 @@ module.exports = function (self) {
             user     : self.config.mysql.user,
             password : self.config.mysql.password,
             database : self.config.mysql.databaseName,
+            acquireTimeout: 1000000
         })
     
         self.database.connect()
@@ -89,6 +90,10 @@ module.exports = function (self) {
             const sessionId = v4()
             const session = {
                 id: sessionId,
+                websiteParts: [],
+                socketId: null,
+                currentRenderStage: 1,
+                pagename: page.name,
                 createServerSync(id, serverCallback, callback) {
                     self.syncs.push({
                         id: id,
@@ -112,6 +117,8 @@ module.exports = function (self) {
                     </script>`
                 }
             }
+
+            self.sessions.push(session)
 
             const _dom = (new JSDOM(fs.readFileSync(path.resolve(self.dirname + '/cached/' + page.name + '.html'), 'utf-8'))).window.document
             _dom.querySelector("head").setAttribute("webmax-session-id", sessionId)
@@ -239,6 +246,14 @@ module.exports = function (self) {
             self?.onFrontendMessage(data, socket)
         })
 
+        socket.on('client:giveServerSocketId', sessionId => {
+            self.sessions.forEach(session => {
+                if(session.id == sessionId) {
+                    session.socketId = socket.id
+                }
+            })
+        })
+
         socket.on('client:requestServerSync', data => {
 
             const sync = self.syncs.find(sync => sync.id == data.id && sync.sessionId == data.sessionId)
@@ -247,6 +262,10 @@ module.exports = function (self) {
             
             if(cb1 != cb2) return self.error(`An error occured while client session ${data.sessionId} tried to execute callback ${cb2}. Callback isn't the same as primary declared at website rendering`)
             eval(`(${cb2})()`)
+        })
+
+        socket.on('request:partialRenderingNextStage', sessionId => {
+            if(self.sessions.find(session => session.id === sessionId)?.nextStage) self.sessions.find(session => session.id === sessionId)?.nextStage(socket.id)
         })
     })
 }

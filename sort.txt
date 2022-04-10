@@ -1,0 +1,8 @@
+const sorted = []
+const unsorted = array.slice()
+while (unsorted.length > 0) {
+    const min = Math.min(...unsorted)
+    sorted.push(min)
+    unsorted.splice(unsorted.indexOf(min), 1)
+}
+return sorted

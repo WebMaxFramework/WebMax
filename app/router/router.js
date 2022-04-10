@@ -10,6 +10,11 @@ module.exports = function createRouter() {
                 path: "/serverSync",
                 file: "/pages/Sync.webmax",
                 name: "ServerSync"
+            },
+            {
+                path: "/partial",
+                file: "/pages/Partial.webmax",
+                name: "PartialRendering"
             }
         ],
         api: [

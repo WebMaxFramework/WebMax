@@ -54,12 +54,56 @@ module.exports = function(name, self) {
     // Adding socketio
     dom.querySelector("head").innerHTML = `<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script> ${dom.querySelector("head").innerHTML}`
 
+    // Partial rendering
+    if(self.config.partialRendering) {
+        const document = dom
+        const $dom = {
+            getElementByAttribute(attr, value) {
+                const elements = document.querySelectorAll("*")
+                let ret = []
+
+                for(let el of elements) {
+                    const cloned = el.cloneNode(true)
+                    cloned.innerHTML = ""
+
+                    if(cloned.getAttributeNames().includes(attr)) {
+                        const val = cloned.getAttribute(attr)
+                        if(val == value) ret.push(el)
+                    }
+                } 
+
+                return ret
+            }
+        }
+
+        const sections = $dom.getElementByAttribute("wm:section", "")
+        sections.forEach(sect => sect.setAttribute("wm:section", require("uuid").v4()))
+
+        const clonedSections = []
+        let index = 0
+
+        const _objPart = {
+            pagename: name,
+            parts: []
+        }
+
+        for(let section of sections) {
+            clonedSections.push(section.cloneNode(true).outerHTML)
+            _objPart.parts.push(clonedSections[clonedSections.length - 1])
+            index > 0 && section.remove()
+            index++
+        }
+
+        self.pagesParts.push(_objPart)
+    }
+
     // Saving
     //let results = htmlMinify(dom.documentElement.outerHTML, {
     //    removeAttributeQuotes: true,
     //    minifyJS: true
     //})
     //results = minifier(results)
+
     let results = dom.documentElement.outerHTML
     results = removeIncludeTags(results)
 

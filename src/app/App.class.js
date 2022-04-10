@@ -35,6 +35,7 @@ class App {
         this.sessions = []
         this.errors = []
         this.syncs = []
+        this.pagesParts = []
 
         /* "Public" folder  */
         this.expressApp.use(express.static(path.resolve(dirname + "/public")))

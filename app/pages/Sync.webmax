@@ -32,10 +32,5 @@
         <button wm:class="btn:sayHello">
             Say Hello
         </button>
-
-        <!--
-
-            
-        -->
     </body>
 </html>
