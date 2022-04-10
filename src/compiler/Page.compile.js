@@ -55,11 +55,12 @@ module.exports = function(name, self) {
     dom.querySelector("head").innerHTML = `<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script> ${dom.querySelector("head").innerHTML}`
 
     // Saving
-    let results = htmlMinify(dom.documentElement.outerHTML, {
-        removeAttributeQuotes: true,
-        minifyJS: true
-    })
-    results = minifier(results)
+    //let results = htmlMinify(dom.documentElement.outerHTML, {
+    //    removeAttributeQuotes: true,
+    //    minifyJS: true
+    //})
+    //results = minifier(results)
+    let results = dom.documentElement.outerHTML
     results = removeIncludeTags(results)
 
     fs.writeFileSync(self.dirname + "/cached/" + name + ".html", results, "utf-8")

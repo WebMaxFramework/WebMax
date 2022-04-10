@@ -1,10 +1,12 @@
 # Another Static Site Generator
 Webmax is another static site generator.
+The only one framework where you can synchronise your backend & frontend code
 
 # Is this a framework?
 - Yes of course
 
 # Advantagements:
+- FRONTEND & BACKEND CODE SYNCRONISED
 - Flexibility
 - Lightweight
 - Fast
@@ -17,6 +19,10 @@ Webmax is another static site generator.
 - Static webpages
 - Static components
 - Easy syntax
+- TailwindCSS & PostCSS integration
+
+# How does FRONTEND & BACKEND CODE SYNC WORKS
+You can execute code at backend from your frontend and your website clients cannot do that, because only code (callback) declared by you could be EXECUTED AT BACKEND! 
 
 # Documentation
 
@@ -32,6 +38,7 @@ public/
 router/
 scss/
 vue/
+postcss/
 
 2. SCSS/SASS/LESS Compiling
 Every style inside folders:
@@ -149,4 +156,32 @@ All these methods are:
 + deleteById(id) 
 + deleteWhere(x, y)
 
-11. That's all now
+11. FrontEnd & BackEnd code synchronising
+So basiclly this code will do that:
+``` js
+@webmax((webmax, session, request) => {
+    const syncId = require("uuid").v4()
+
+    const serverCallback = () => console.log("Hello")
+
+    const sync = session.createServerSync(syncId, serverCallback, (syncId) => {
+        const btn = window.webmax.getElementByClassNameExtended("btn:sayHello")
+        btn?.addEventListener("click", () => {
+            window.webmax.sync(syncId).exec()
+        })
+    })
+    return sync
+});
+```
+
+So, you need to generate some unique id to create sync.
+Then you create server callback, the code which would be executed in backend. Only this code will be executed in backend, other callbacks/code will generate errors (this is for security reasons)
+
+Then we create sync using session.createServerSync(syndId, serverCallback, frontendCallback)
+and we returning the sync.
+
+The frontend will run "frontendCallback" and push this sync to client webmax runtime.
+When you'll call .exec() method on sync instance in your webmax runtime, server will run the serverCallback.
+Easy!
+
+12. That's all now

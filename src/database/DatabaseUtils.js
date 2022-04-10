@@ -35,6 +35,23 @@ class Model {
         return this.database.awaitQuery(`DELETE FROM ${this.tableName} WHERE ${x} = '${y}' `)
     }
 
+    truncate() {
+        return this.database.awaitQuery(`TRUNCATE TABLE ${this.tableName}`)
+    }
+
+    update(id, values) {
+        let request = `UPDATE ${this.tableName} SET `
+
+        for(let [a,b] of Object.entries(values)) {
+            request += `${a} = '${b}',`
+        }
+
+        request = request.slice(0, -1)
+        request += ` WHERE id = ${id}`
+
+        return this.database.awaitQuery(request)
+    }
+
     blocked = []
 }
 

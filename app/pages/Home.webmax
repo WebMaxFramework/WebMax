@@ -9,17 +9,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Document</title>
 
-        <script id="webmax-frontend-runner">
+        <script id="webmax-frontend-runner" wm:primary>
             const webmax = window.webmax
-            console.log(webmax.getWebMaxSessionId())
-            webmax.serverWrite("serverWrite", "Hello, world!")
         </script>
     </head>
-    <body>
-
-        <div id="vue">
-            
-        </div>
+    <body class="bg-green-700">
+        <div id="vue"></div>
+        <!--<button wm:class="btn:sayHello">Hello :)</button>
 
         <HelloWorld></HelloWorld>
         <Code code="let a = 4;"></Code>
@@ -33,6 +29,21 @@
         @webmax((webmax, session, request) => { 
             return require("uuid").v4()
         });
+
+        @webmax((webmax, session, request) => {
+            return webmax.createData("data/json", {
+                users: [{
+                    name: "Jane",
+                    age: 24,
+                    id: require("uuid").v4()
+                },
+                {
+                    name: "John",
+                    age: 31,
+                    id: require("uuid").v4()
+                }]
+            })
+        });-->
 
         <script src="js/app.js"></script>
     </body>

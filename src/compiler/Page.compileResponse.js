@@ -1,6 +1,6 @@
 const chalk = require("chalk")
 
-const newRegexMatching = /\@(webmax)\([ !"#$%&\'()*+,-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\[\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~]+(\);)/g
+const newRegexMatching = /\@(webmax)\([ !"#$%&\'()*+,-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\[\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\r?\n]+(\);)/g
 const oldRegexMatching = /\@(webmax)\([\w\W\d\D\s\S]+\);/g
 
 module.exports = function(content, id, self, session, req) {

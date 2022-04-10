@@ -2,9 +2,14 @@ module.exports = function createRouter() {
     return {
         pages: [
             {
-                path: "/:page?",
+                path: "/",
                 file: "/pages/Home.webmax",
                 name: "Home"
+            },
+            {
+                path: "/serverSync",
+                file: "/pages/Sync.webmax",
+                name: "ServerSync"
             }
         ],
         api: [

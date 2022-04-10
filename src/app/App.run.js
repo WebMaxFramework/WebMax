@@ -10,6 +10,7 @@ const { v4 } = require("uuid")
 const browserify = require('browserify')
 const { exec } = require("child_process")
 const mysql = require("mysql-await")
+const { minify } = require("html-minifier")
 
 module.exports = function (self) {
     
@@ -22,14 +23,16 @@ module.exports = function (self) {
     // Connecting to database
     if(self.config.allowWebMaxMessages) self.notify(`Connecting to database...`)
 
-    self.database = mysql.createConnection({
-        host     : self.config.mysql.host,
-        user     : self.config.mysql.user,
-        password : self.config.mysql.password,
-        database : self.config.mysql.databaseName,
-    })
-
-    self.database.connect()
+    try {
+        self.database = mysql.createConnection({
+            host     : self.config.mysql.host,
+            user     : self.config.mysql.user,
+            password : self.config.mysql.password,
+            database : self.config.mysql.databaseName,
+        })
+    
+        self.database.connect()
+    } catch(err) { self.error(`Cannot connect to database. Error: ${err}`) }
       
     // Creating Models
     fs.readdirSync(`${self.dirname}/models/`).forEach(file => {
@@ -44,7 +47,13 @@ module.exports = function (self) {
         model_.setDatabase(self.database)
         model_.tableName = table.name
 
-        //model_.add(["", "test2", "am@amsd.com", "asd"])
+        // model_.add(["", "test2", "am@amsd.com", "asd"])
+        // model_.update(2, {
+        //     id: 2,
+        //     name: "test1",
+        //     email: "asdf23@gmail.com",
+        //     password: "asdasdasda"
+        // })
     })
 
     // Creating router
@@ -80,6 +89,28 @@ module.exports = function (self) {
             const sessionId = v4()
             const session = {
                 id: sessionId,
+                createServerSync(id, serverCallback, callback) {
+                    self.syncs.push({
+                        id: id,
+                        sessionId: sessionId,
+                        callbackPreview: serverCallback.toString()
+                    })
+
+                    return `<script wm:class="@addSyncs">
+                        window.webmax.syncs.push({
+                            id: "${id}",
+                            sessionId: "${sessionId}",
+                            callback: ${callback.toString()},
+                            exec() {
+                                window.webmax.socket.emit("client:requestServerSync", {
+                                    callback: "${serverCallback.toString().replace(/"/g, `'`)}",
+                                    id: "${id}",
+                                    sessionId: "${sessionId}",
+                                })
+                            }
+                        });
+                    </script>`
+                }
             }
 
             const _dom = (new JSDOM(fs.readFileSync(path.resolve(self.dirname + '/cached/' + page.name + '.html'), 'utf-8'))).window.document
@@ -87,6 +118,10 @@ module.exports = function (self) {
             let preparedContent = _dom.documentElement.outerHTML
 
             preparedContent = await self.compileResponse(preparedContent, sessionId, self, session, req)
+            preparedContent = minifier(minify(preparedContent, {
+                removeAttributeQuotes: true,
+                minifyJS: true
+            }))
 
             res.send(preparedContent)
         })
@@ -172,7 +207,7 @@ module.exports = function (self) {
             content += fs.readFileSync(self.dirname + "/public/css/" + file, "utf-8")
         })
 
-        fs.writeFileSync(self.dirname + "/public/css/style.all.min.css", content)
+        fs.writeFileSync(self.dirname + "/public/css/style.all.min.css", minifier(content))
     
         method = () => {}
         time = (new Date().getTime() - initTime) / 1000
@@ -189,13 +224,29 @@ module.exports = function (self) {
 
     if(self.config.allowWebMaxMessages) self.notify("Starting webpack mixer")
 
-    exec("npx mix")
+    exec("npx mix", (error, stdout, stderr) => {
+        if (error) {
+            self.error(`\n\n\nAn error occured: ${error}`);
+            return;
+        }
+        self.notify(`Webpack compiled successfully!`)
+      })
 
     // Adding SocketIO shortcuts
 
     self.io.on('connection', socket => {
         socket.on('serverWrite', data => {
             self?.onFrontendMessage(data, socket)
+        })
+
+        socket.on('client:requestServerSync', data => {
+
+            const sync = self.syncs.find(sync => sync.id == data.id && sync.sessionId == data.sessionId)
+            const cb1 = sync.callbackPreview.replace(/"/g, `'`)
+            const cb2 = data.callback
+            
+            if(cb1 != cb2) return self.error(`An error occured while client session ${data.sessionId} tried to execute callback ${cb2}. Callback isn't the same as primary declared at website rendering`)
+            eval(`(${cb2})()`)
         })
     })
 }

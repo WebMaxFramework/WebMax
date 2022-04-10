@@ -1,0 +1,41 @@
+<html lang="en" dir="ltr"><head><script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script> <script src="/cache/webmax.runtime.js"></script> <base> <script base-set="">document.querySelector("base").href=window.location.origin+'/'</script><link href="css/style.all.min.css" rel="stylesheet" id="webmax-all-styles"></head><body class="bg-green-700" data-webmax-app="c87ffa65-d801-441d-a668-23926d0613bf" id="#app">
+
+
+
+
+    
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+
+        <script id="webmax-frontend-runner" wm:primary="">
+            const webmax = window.webmax
+        </script>
+    
+    
+        @webmax((webmax, session, request) =&gt; {
+            const syncId = require("uuid").v4()
+
+            const serverCallback = () =&gt; console.log("Hello")
+
+            const sync = session.createServerSync(syncId, serverCallback, (syncId) =&gt; {
+                const btn = window.webmax.getElementByClassNameExtended("btn:sayHello")
+                btn?.addEventListener("click", () =&gt; {
+                    window.webmax.sync(syncId).exec()
+                })
+            })
+
+            return sync
+        });
+
+        <button wm:class="btn:sayHello">
+            Say Hello
+        </button>
+
+        <!--
+
+            
+        -->
+    
+</body></html>
