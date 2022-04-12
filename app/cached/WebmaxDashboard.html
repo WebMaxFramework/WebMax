@@ -1,0 +1,56 @@
+<html lang="en" dir="ltr"><head><script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script> <script src="/cache/webmax.runtime.js"></script> <base> 
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Webmax Dashboard</title>
+
+        <style>
+            /* Message for frontend: Yeah, I know that making styles in <style> tag in HTML is shitty and it's shouldn't be done. But look inside Dashboard.webmax file ;) */
+            @webmax(() => {
+                return require("fs").readFileSync(require("path").resolve(__dirname + "/../dashboard/dashboard.css"), "utf-8")
+            });
+        </style>
+
+        <script src="https://kit.fontawesome.com/a0b2c0ff4a.js" crossorigin="anonymous"></script>
+    <script base-set="">document.querySelector("base").href=window.location.origin+'/'</script><link href="css/style.all.min.css" rel="stylesheet" id="webmax-all-styles"></head>
+    <body class="bg-slate-700" wm:sectionscontainer="" data-webmax-app="f6eb41aa-d90c-41de-b26a-95fd588bd385" id="#app">
+        <div class="topbar bg-slate-800" wm:section="94dfc61a-752e-4cd4-8044-2330f7672d00">
+            <img src="images/logo.png" alt="" class="webmax-logo">
+            <h1>Dashboard</h1>
+        </div>
+
+        
+
+        
+
+        <script defer="">
+            let isOffline = false;
+            function getStats() {
+                window.webmax.socket.emit("dashboard:getStats", "");
+            };
+            function bindData(data) {
+                document.querySelector("#memory-usage").innerHTML = isOffline ? "Server is offline" : `${data.ramUsage.toFixed(2)} <strong>MB</strong>`;
+                document.querySelector("#users-now").innerHTML = isOffline ? "Server is offline" : data.users;
+                document.querySelector("#total-pages").innerHTML = isOffline ? "Server is offline" : data.pages;
+            };         
+            window.webmax.socket.on('dashboard:stats', data => bindData(data));
+            window.webmax.on("partialRenderingEnd", () => {
+                setInterval(() => getStats(), 1000);
+                getStats();
+                
+                document.querySelector("#turn-off-server").addEventListener("click", () => {
+                    isOffline = true;
+                    document.querySelector("#turn-off-server").remove();
+                    document.querySelector("#status").innerHTML = "Offline";
+                    document.querySelector("#status").classList.replace("online", "offline");
+                    window.webmax.socket.emit("dashboard:exit", 1);
+                    bindData({});
+                });
+
+                window.webmax.socket.on('wm-server:error', log => {
+                    document.querySelector("#logs-console").innerHTML += `<div class="log-item">${log}</div>`;
+                });
+            });
+        </script>
+    
+</body></html>

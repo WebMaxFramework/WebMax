@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito&family=Poppins&display=swap');
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px 4px #112;
+}
+
+.topbar h1 {
+    font-weight: 700;
+    margin-left: 50px;
+    font-size: 60px;
+    font-family: 'Nunito', sans-serif;
+}
+
+.webmax-logo {
+    width: 150px;
+}
+
+.nunito {
+    font-family: 'Nunito', sans-serif;
+}
+
+.poppins {
+    font-family: 'Poppins', sans-serif;
+}
+
+.container-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 80%;
+    margin: 0 auto;
+    margin-top: 75px;
+}
+
+.container-main .tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+}
+
+.container-main .tile .tile-inner {
+    width: 450px;
+    height: 175px;
+    padding: 15px 25px;
+    box-shadow: 0 0 8px 4px #112;
+}
+
+.container-main .tile .tile-inner h1 em {
+    min-width: 65px;
+    color: #3dbf2c;
+}
+
+.container-main .tile .tile-inner span {
+    padding-left: 80px;
+    font-size: 25px;
+    text-shadow: 1px 1px #3dbf2c;
+}
+
+.top-container {
+    width: 80%;
+    margin: 0 auto;
+    min-height: 175px;
+    padding: 15px 25px;
+    margin-top: 105px;
+    box-shadow: 0 0 8px 4px #112;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tile-inner-x {
+    width: 33%;
+    height: 100%;
+    min-height: 175px;
+    padding: 0 25px;
+}
+
+.server-status, .server-logs {
+    font-size: 40px;
+}
+
+.online {
+    color: #3dbf2c;
+}
+
+.offline {
+    color: rgb(242, 86, 86);
+}
+
+.btn-server-status-toggle {
+    background: rgb(242, 86, 86);
+    color: #fff;
+    padding: 10px 25px;
+    font-size: 20px;
+    border-radius: 4px;
+    margin-top: 15px;
+    transition: .4s;
+    box-shadow: 0 0 8px 0px #000;
+}
+
+.btn-server-status-toggle:hover {
+    background: rgb(218, 68, 68);
+}
+
+.btn-server-status-toggle em {
+    margin-right: 5px;
+}
+
+#center-top {
+    border-left: 1px dashed #666;
+    border-right: 1px dashed #666;
+}
+
+#status {
+    transition: 0s;
+}
+
+#logs-console {
+    background: #0005;
+    border-radius: 0px;
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    min-height: 90px;
+    overflow-y: auto;
+    margin-top: 10px;
+    box-shadow: 0 0 8px 0px #000;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    background: #040404;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3dbf2c;
+}
+
+.log-item {
+    color: rgb(242, 86, 86);
+}

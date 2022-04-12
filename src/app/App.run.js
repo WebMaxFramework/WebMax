@@ -75,6 +75,13 @@ module.exports = function (self) {
         'utf-8'))
     )
 
+    // Adding dashboard pages
+    routes.pages.push({
+        path: "/_dashboard",
+        file: "@dashboard/Dashboard.webmax",
+        name: "WebmaxDashboard",
+    },)
+
     // Compiling pages
     routes.pages.forEach(page => self.compilePage(page.name))
 
@@ -94,6 +101,8 @@ module.exports = function (self) {
                 socketId: null,
                 currentRenderStage: 1,
                 pagename: page.name,
+                offlineTime: 0,
+                isOffline: false,
                 createServerSync(id, serverCallback, callback) {
                     self.syncs.push({
                         id: id,
@@ -242,6 +251,22 @@ module.exports = function (self) {
     // Adding SocketIO shortcuts
 
     self.io.on('connection', socket => {
+
+        socket.on('disconnect', () => {
+            self.sessions.forEach(session => session.isOffline = true)
+            self.io.emit('session:isOnline', 1)
+
+            setTimeout(() => {
+                self.sessions.forEach((session, key) => {
+                    if(session.isOffline) self.sessions.splice(key, 1)
+                })
+            }, 1000)
+        })
+
+        socket.on('session:online', (sessionId) => {
+            self.sessions.find(session => session.id === sessionId).isOffline = false
+        })
+
         socket.on('serverWrite', data => {
             self?.onFrontendMessage(data, socket)
         })
@@ -267,5 +292,27 @@ module.exports = function (self) {
         socket.on('request:partialRenderingNextStage', sessionId => {
             if(self.sessions.find(session => session.id === sessionId)?.nextStage) self.sessions.find(session => session.id === sessionId)?.nextStage(socket.id)
         })
+
+        socket.on('dashboard:getStats', () => {
+            socket.emit('dashboard:stats', {
+                pages: routes.pages.length,
+                users: self.sessions.length,
+                ramUsage: self.ramUsage
+            })
+        })
+
+        socket.on('dashboard:exit', () => {
+            if(self.config.dashboard) {
+                self.notify(chalk.red("Stopping the server. Reason: remote stop request from dashboard"))
+                process.exit(0)
+            }
+        })
     })
+
+    // Tick
+
+    setInterval(() => {
+        // Ram monitoring / CPU monitoring
+        self.ramUsage = process.memoryUsage().heapTotal / 1024 / 1024
+    }, 1000)
 }

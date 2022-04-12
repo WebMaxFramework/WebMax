@@ -14,7 +14,9 @@ module.exports = function(name, self) {
     const page = self.routes.pages.find(page => page.name === name)
     if(!page) self.error(`Page ${name} is undefined!`)
 
-    let primaryContent = fs.readFileSync(self.dirname + page.file, "utf-8")
+    const _path = path.resolve(page.file[0] === "@" ? __dirname + "/../" + page.file.replace("@", "") : (self.dirname + page.file))
+
+    let primaryContent = fs.readFileSync(_path, "utf-8")
     const dom = (new JSDOM(primaryContent)).window.document
 
     // Adding essentials attributes

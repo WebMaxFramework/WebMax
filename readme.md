@@ -245,4 +245,19 @@ Warnings:
 + SECTIONS CANNOT BE GENERATED VIA @webmax(callback) SYNTAX
 + YOU SHOULDN'T CREATE SECTION INSIDE SECTION (probably this will create somekind of ultimate bug (I don't tested it.))
 
-13. That's all now
+13. FrontEnd Webmax runtime "on" method
+The "on" method is used to bind events in webmax.
+Example syntax:
+```js
+window.webmax.on('partialRenderingEnd', () => {
+    document.querySelector("#someElement")?.addEventListener("click", () => {
+        alert("Hello, world!")
+    })
+})
+```
+
+List of events:
++ partialRenderingEnd
+
+14. Dashboard
+Just go to http://your.website.url/_dashboard or https://your.website.url/_dashboard

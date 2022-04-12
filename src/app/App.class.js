@@ -36,6 +36,9 @@ class App {
         this.errors = []
         this.syncs = []
         this.pagesParts = []
+        this.ramUsage = 0
+        this.cpuUsage = 0
+        this.totalOnlineUsers = 0
 
         /* "Public" folder  */
         this.expressApp.use(express.static(path.resolve(dirname + "/public")))
@@ -55,6 +58,14 @@ class App {
         this.error = (...messages) => {
             console.log(chalk.red("[webmax]") + chalk.gray(" >>"), ...messages.map(x => chalk.bgRed.white(x))) 
             this.errors.push(messages)
+            this.sendError(messages)
+        }
+
+        /* Dashboard sending logs */
+        this.sendError = (...messages) => {
+            if(this.config.dashboard) {
+                this.io.emit("dashboard:error", messages.join(" "))
+            }
         }
 
         /* Running "init" function */
@@ -75,6 +86,8 @@ class App {
                 })
             })
         })
+
+        this.errors.forEach(err => this.sendError(err))
 
     }
 }

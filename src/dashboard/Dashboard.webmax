@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Webmax Dashboard</title>
+
+        <style>
+            /* Message for frontend: Yeah, I know that making styles in <style> tag in HTML is shitty and it's shouldn't be done. But look inside Dashboard.webmax file ;) */
+            @webmax(() => {
+                return require("fs").readFileSync(require("path").resolve(__dirname + "/../dashboard/dashboard.css"), "utf-8")
+            });
+        </style>
+
+        <script src="https://kit.fontawesome.com/a0b2c0ff4a.js" crossorigin="anonymous"></script>
+    </head>
+    <body class="bg-slate-700" wm:sectionsContainer>
+        <div class="topbar bg-slate-800" wm:section>
+            <img src="images/logo.png" alt="" class="webmax-logo">
+            <h1>Dashboard</h1>
+        </div>
+
+        <div class="top-container bg-slate-800" wm:section>
+            <div id="left-top"  class="tile-inner-x">  
+                <h2 class="nunito server-status">Server status: <span id="status" class="online">Online</span></h2>
+                <button id="turn-off-server" class="btn-server-status-toggle"><em class="fas fa-pause"></em> Stop</button>
+            </div>
+            <div id="center-top"  class="tile-inner-x">
+                nothing yet...
+            </div>
+            <div id="right-top" class="tile-inner-x">  
+                <h2 class="nunito server-logs">Errors</h2>
+
+                <div id="logs-console">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="container-main" wm:section>
+            <div class="tile">
+                <div class="tile-inner bg-slate-800">
+                    <h1 class="nunito"> <em class="fas fa-tachometer-alt"></em> Memory Usage</h1>
+                    <span id="memory-usage" class="poppins">
+                        100.00 <strong>MB</strong>
+                    </span>
+                </div>
+            </div>
+            <div class="tile">
+                <div class="tile-inner bg-slate-800">
+                    <h1 class="nunito"> <em class="fas fa-users"></em> Current sessions</h1>
+                    <span id="users-now" class="poppins">
+                        147
+                    </span>
+                </div>
+            </div>
+            <div class="tile">
+                <div class="tile-inner bg-slate-800">
+                    <h1 class="nunito"> <em class="fas fa-file-alt"></em> Total pages</h1>
+                    <span id="total-pages" class="poppins">
+                        3
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <script defer>
+            let isOffline = false;
+            function getStats() {
+                window.webmax.socket.emit("dashboard:getStats", "");
+            };
+            function bindData(data) {
+                document.querySelector("#memory-usage").innerHTML = isOffline ? "Server is offline" : `${data.ramUsage.toFixed(2)} <strong>MB</strong>`;
+                document.querySelector("#users-now").innerHTML = isOffline ? "Server is offline" : data.users;
+                document.querySelector("#total-pages").innerHTML = isOffline ? "Server is offline" : data.pages;
+            };         
+            window.webmax.socket.on('dashboard:stats', data => bindData(data));
+            window.webmax.on("partialRenderingEnd", () => {
+                setInterval(() => getStats(), 1000);
+                getStats();
+                
+                document.querySelector("#turn-off-server").addEventListener("click", () => {
+                    isOffline = true;
+                    document.querySelector("#turn-off-server").remove();
+                    document.querySelector("#status").innerHTML = "Offline";
+                    document.querySelector("#status").classList.replace("online", "offline");
+                    window.webmax.socket.emit("dashboard:exit", 1);
+                    bindData({});
+                });
+
+                window.webmax.socket.on('wm-server:error', log => {
+                    document.querySelector("#logs-console").innerHTML += `<div class="log-item">${log}</div>`;
+                });
+            });
+        </script>
+    </body>
+</html>

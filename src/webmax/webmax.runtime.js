@@ -43,15 +43,14 @@ class WebMaxRuntime {
         })
 
         // Removing sync scripts
-        do {
+        while(this.getElementByClassNameExtended("@addSyncs")) {
             this.getElementByClassNameExtended("@addSyncs")?.remove()
-        } while(this.getElementByClassNameExtended("@addSyncs"))
+        } 
 
         // Adding partial render listeners
         this.socket.on('server:partial-render-next-stage', (part) => {
             const element = this.getElementByAttribute("wm:sectionsContainer", "") || document.body
             element.innerHTML += part
-            console.log(part)
 
             this.partialRenderingNextStage()
         })
@@ -59,11 +58,17 @@ class WebMaxRuntime {
         this.socket.on('server:partial-render-completeted', () => {
             document.querySelector("#wm-loader").remove()
             document.querySelector("#timer-wm-loader")?.remove()
+            this.partialRenderingEndCallbacks.forEach(callback => callback())
         })
 
         setTimeout(() => {
             this.partialRenderingNextStage()
         }, 150)
+
+        // Sending that session is online
+        this.socket.on('session:isOnline', () => {
+            this.socket.emit('session:online', this.getWebMaxSessionId())
+        })
 
     }
 
@@ -72,14 +77,12 @@ class WebMaxRuntime {
     }
 
     bindErrors() {
-        this.socket.on('wm-server:error', error => writeError(error))
+        this.socket.on('wm-server:error', error => this.writeError(error))
         console.error = (error) => this.writeError(error)
-        SyntaxError = (error) => this.writeError(error)
-        TypeError = (error) => this.writeError(error)
-        Error = (error) => this.writeError(error)
     }
 
-    writeError(error) {
+    writeError(error, forced) {
+        if(window.location.href === window.location.origin + '/_dashboard' && !forced) return
         if(!document.querySelector("#wm----error-container")) this.createErrorContainer()
 
         document.querySelector("#error-container").innerHTML += `<div class="wm:error" style="margin-top: 15px; color: rgb(247, 80, 80)">
@@ -163,9 +166,18 @@ class WebMaxRuntime {
         const intv = setInterval(() => {
             if(document.querySelector("#timer-wm-loader")) document.querySelector("#timer-wm-loader").innerHTML = parseInt(document.querySelector("#timer-wm-loader").innerHTML.split("s")[0]) + 1 + "s"
             else clearInterval(intv)
-
-            console.log(document.querySelector("#timer-wm-loader")?.innerHTML)
         }, 1000)
+    }
+
+    partialRenderingEndCallbacks = []
+
+    on(name, callback) {
+        const events = ["partialRenderingEnd"]
+        if(!events.includes(name)) this.writeError(`[frontend] Event ${name} is not supported`, true)
+
+        if(name == "partialRenderingEnd") {
+            this.partialRenderingEndCallbacks.push(callback)
+        }
     }
 }
 

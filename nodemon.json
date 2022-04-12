@@ -1,3 +1,4 @@
 {
-    "ignore": ["app/public/*", "app/public/js/*", "app/public/js/app.js", "mix-manifest.json"]
+    "ignore": ["app/public/*", "app/public/js/*", "app/public/js/app.js", "mix-manifest.json", "node_modules/*", "app/cached/*"],
+    "ext": "*"
 }
